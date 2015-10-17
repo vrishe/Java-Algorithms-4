@@ -81,4 +81,59 @@ public class Chapter1_BasicProgrammingModel {
 		System.out.println('b' + 'c');			// 197, summation casts char to integer implicitly.
 		System.out.println((char)('a' + 4));	// e
 	}
+	
+	
+	/**
+	 * Convert integer to string
+	 */
+	@Test
+	public void exercise1_1_9() {
+		Utils.announceTestMethod();
+		
+		final int value = 451;
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = value; i > 0; i /= 2) {
+			sb.insert(0, i % 2);
+		}
+		String expected = Integer.toBinaryString(value);
+		
+		StdOut.printf("Binary representation of %d is: %s (ref. %s)\n", 
+				value, sb.toString(), expected);
+		assertEquals(expected, sb.toString());
+	}
+	
+	/**
+	 * What will be printed out?
+	 * 
+	 * Result: 0, 1, 2, 3, 4, 4, 3, 2, 1, 0
+	 */
+	@Test
+	public void exercise1_1_12() {
+		Utils.announceTestMethod();
+		
+		int array[] = new int[10];
+		int expected[] = new int[array.length];
+		
+		int ihalf = array.length / 2 + array.length % 2;
+		for (int i = 0, imax = array.length - 1; i < array.length; ++i) {
+			array[i] = imax - i;
+			
+			if (i < ihalf) {
+				expected[i] = i;
+				expected[imax - i] = i;
+			}
+		}
+		StringBuilder sb = new StringBuilder();
+			
+		for (int i = 0; i < array.length; ++i) {
+			array[i] = array[array[i]];
+			
+			sb.append(array[i]).append(',');
+		}
+		sb.delete(sb.length() - 1, sb.length());
+		
+		StdOut.printf("Output: %s", sb);
+		assertArrayEquals(expected, array);
+	}
 }
