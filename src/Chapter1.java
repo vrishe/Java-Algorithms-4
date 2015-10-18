@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 })
 @RunWith(Suite.class)
 public class Chapter1 {
-
+	
 	@BeforeClass
 	public static void introduce() {
 		StdOut.println("Chapter 1:");

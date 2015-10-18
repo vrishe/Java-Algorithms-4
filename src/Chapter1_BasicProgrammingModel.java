@@ -1,8 +1,9 @@
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
-public class Chapter1_BasicProgrammingModel {
-	
+public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
+		
 	@BeforeClass
 	public static void introduce() {
 		StdOut.println("1.1 Basic programming model");
@@ -133,7 +134,185 @@ public class Chapter1_BasicProgrammingModel {
 		}
 		sb.delete(sb.length() - 1, sb.length());
 		
-		StdOut.printf("Output: %s", sb);
+		StdOut.printf("Output: %s\n", sb);
 		assertArrayEquals(expected, array);
+	}
+	
+	/**
+	 * Find a number A, such as: 0 < A <= Log2(N), where A -> max.
+	 */
+	@Test
+	public void exercise1_1_14() {
+		Utils.announceTestMethod();
+		
+		final int N = 1763;
+		
+		int result = 0, value = N;
+		while ((value /= 2) > 0) {
+			++result;
+		}
+		int expected = (int)(Math.log(N) / Math.log(2));
+		
+		StdOut.printf("Result is: %d (expected %d)\n", result, expected);
+		assertEquals(expected, result);
+	}
+	
+	/**
+	 * Build a histogram for an array.
+	 * 
+	 * @see <a href="https://www.random.org/">Random.org</a>
+	 */
+	@Test
+	public void exercise1_1_15() {
+		Utils.announceTestMethod();
+		
+		final int array[] = new int[] { 
+			42, 82, 10, 49, 47, 63, 25,  2, 52, 84,
+			58, 94,100, 99, 75, 68,  9, 33, 59, 96,
+			51, 17, 44, 42, 88, 86, 92, 54, 37, 15,
+			55, 31, 67, 72, 71, 96, 65, 78, 39, 28,
+			46, 21, 34, 18, 11, 16, 14, 60, 65, 32,
+			76,  7, 81, 12, 55, 46, 95, 79, 22, 85,
+			29, 27, 39, 70, 90, 23, 98, 24, 13, 36,
+			80, 40, 38,  1, 62, 26, 53,  4,  6, 73,
+			30,  3, 41, 88, 88,  5, 20, 69, 50, 43,
+			56, 78, 19,  5, 74, 83, 45,  8, 77, 66
+		};
+		int min = Integer.MAX_VALUE, histogram[];
+		{
+			int max = Integer.MIN_VALUE, histogramSize;
+			
+			for (int value : array) {
+				if (value < min) {
+					min = value;
+				} 
+				if (value > max) {
+					max = value;
+				}
+			}			
+			histogramSize = max - min + 1;
+			assertTrue(histogramSize <= array.length);
+			
+			histogram = new int[histogramSize];
+		}
+		StringBuilder sb = new StringBuilder(String.format("MIN, %d -> ", min));
+		
+		for (int value : array) {
+			++histogram[value - min];
+		}
+		int count = 0;
+		
+		for (int value : histogram) {
+			count += value;
+			
+			sb.append(value).append(',');
+		}
+		sb.delete(sb.length() - 1, sb.length());
+		sb.append(String.format(" -> %d, MAX", min + histogram.length - 1));
+		
+		StdOut.println(sb.toString());
+		StdOut.printf("Result is: %d (expected %d)\n", count, array.length);
+		assertEquals(array.length, count);
+	}
+	
+	/**
+	 * What will be printed?
+	 * 
+	 * Result: "311361142246"
+	 */
+	@Test
+	public void exercise1_1_16() {
+		Utils.announceTestMethod();
+		
+		String result = exR1(6);
+		StdOut.printf("Result is: %s\n", result);
+		assertEquals("311361142246", result);
+	}
+
+	private static String exR1(int n) {
+		if (n > 0) {
+			return exR1(n - 3) + n + exR1(n - 2) + n;
+		}
+		return "";
+	}
+	
+	/**
+	 * What will be printed?
+	 * 
+	 * Result: 50 and 33, mystery(a, b) counts a*b;
+	 * 	If '+' changed with '*' and 'return 0' is changed with 'return 1', then is counts a^b.
+	 */
+	@Test
+	public void exercise1_1_18() {
+		Utils.announceTestMethod();
+		
+		final int result1 = mystery(2, 25);
+		final int result2 = mystery(3, 11);
+		
+		StdOut.printf("Results are: %d, %d\n", result1, result2);
+		assertTrue(result1 == 50 && result2 == 33);
+	}
+	
+	private static int mystery(int a, int b) {
+		if (b != 0) {
+			int result = mystery(a + a, b / 2);
+			
+			return b % 2 == 0 ? result : result + a;
+		}
+		return 0;
+	}
+	
+	/**
+	 * Fibonacci calculations.
+	 */
+	@Test(timeout = 60 * 60 * 1000)
+	@ConditionalIgnoreRule.ConditionalIgnore(from = TestConditions.class, select = "RUN_SHORT_TESTS_ONLY")
+	public void exercise1_1_19() {
+		Utils.announceTestMethod();
+		
+		final int N = 2;
+		
+		F(N); // JIT warm-up.
+		double time = Utils.measureExecutionTimeFor(new Action() {
+
+			@Override
+			public void invoke() {
+				F(N); // A 'single' call.
+			};
+		});
+		int maxNumber = 2 * (int)(Math.log((60 * 60 * 1000) / time) / Math.log(2)); // Very inexact, not sure about 2 multiplier. But still, Fibonacci has 2^n complexity.
+		
+		StdOut.printf("Maximum number to calculate F for less than an hour is: %d\n", maxNumber);
+		
+		final OutValue<Integer> recursiveDepth = new OutValue<>(0);
+		final long unreachableResult = F(maxNumber, recursiveDepth);
+		
+		StdOut.printf("Cheers! Fibonacci number for index %d is %d (recursive depth: %d)", 
+				maxNumber, unreachableResult, recursiveDepth.value);
+	}
+	
+	static class OutValue<T> {
+		
+		public OutValue(T value) {
+			this.value = value;
+		}
+		
+		T value;
+	};
+	
+	private static long F(int value, OutValue<Integer> outValue) {
+		outValue.value++;
+		
+		if (value > 1) {
+			return F(value - 2, outValue) + F(value - 1, outValue);
+		}	
+		return value;
+	}
+	
+	private static long F(int value) {
+		if (value > 1) {
+			return F(value - 2) + F(value - 1);
+		}		
+		return value;
 	}
 }

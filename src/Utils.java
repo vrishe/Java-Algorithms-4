@@ -58,6 +58,31 @@ public final class Utils {
 	}
 	
 	
+	public static double measureExecutionTimeFor(Action action) {
+		return measureExecutionTimeFor(action, getCallerMethodName(1, false, false));
+	}
+	
+	public static double measureExecutionTimeFor(Action action, String tag) {
+		if (action == null) {
+			throw new NullPointerException("action can't be 'null'.");
+		}
+		long time = System.nanoTime();
+		
+		try {
+			action.invoke();
+		} catch (Throwable ignored) {
+			/* Nothing to do */
+		} finally {
+			time = (System.nanoTime() - time);
+		}
+		double result = time / 1000000000d;
+		
+		StdOut.printf("Execution time for %s is: %.10fs\n", tag, result);
+		
+		return result;
+	}
+	
+	
 	private Utils() {
 		/* Prevent instantiating */
 	}
