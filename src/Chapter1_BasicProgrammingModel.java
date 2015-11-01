@@ -315,4 +315,60 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 		}		
 		return value;
 	}
+	
+	/**
+	 * Recursive factorial calculations.
+	 */
+	@Test
+	public void exercise1_1_20() {
+		Utils.announceTestMethod();
+		
+		final int N = 10;//1765;
+		
+		double actual = flogn_a(N);
+		double actualTime = Utils.measureExecutionTimeFor(new Action() {
+
+			@Override
+			public void invoke() {
+				flogn_a(N); // A 'single' call.
+			};
+		});
+		double expected = flogn_b(N); // This version is most appropriate one, refer implementation.
+		double expectedTime = Utils.measureExecutionTimeFor(new Action() {
+
+			@Override
+			public void invoke() {
+				flogn_b(N); // A 'single' call.
+			};
+		});	
+		StdOut.printf("ln(N!) is: %f, %.5fs (expected %f, %.5fs)", actual, actualTime, expected, expectedTime);
+		assertEquals(expected, actual, .00001);
+	}
+	
+	public static long factorial(int N) {
+		if (N < 0) {
+			throw new IllegalArgumentException("N must be non-negative.");
+		}
+		return factorialImpl(N);
+	}
+	
+	private static long factorialImpl(int N) {
+		return N > 0 ? factorialImpl(N - 1) * N : 1;
+	}
+	
+	public static double flogn_a(int N) {
+		return Math.log(factorial(N));
+	}
+	
+	public static double flogn_b(int N) {
+		if (N < 0) {
+			throw new IllegalArgumentException("N must be non-negative.");
+		}
+		double result = 0;
+		
+		while (N > 0) {
+			result += Math.log(N--);
+		}
+		return result;
+	}
 }
