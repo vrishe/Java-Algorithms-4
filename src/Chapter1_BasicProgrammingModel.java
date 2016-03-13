@@ -70,7 +70,7 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 	/**
 	 * What will be printed?
 	 * 
-	 * a) Just a character a;
+	 * a) Just a character b;
 	 * b) An integer value of 'b' plus 'c': 98 + 99 = 197;
 	 * c) The fourth character after 'a', which is: 97 + 4 = 101 -> 'e'.
 	 */
@@ -291,15 +291,6 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 				maxNumber, unreachableResult, recursiveDepth.value);
 	}
 	
-	static class OutValue<T> {
-		
-		public OutValue(T value) {
-			this.value = value;
-		}
-		
-		T value;
-	};
-	
 	private static long F(int value, OutValue<Integer> outValue) {
 		outValue.value++;
 		
@@ -314,6 +305,76 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 			return F(value - 2) + F(value - 1);
 		}		
 		return value;
+	}
+	
+	@Test
+	public void exercise1_1_19_enhanced() {
+		Utils.announceTestMethod();
+		
+		final int N = 47;
+		
+		long actual, expected = F(N);
+		
+		System.out.println(String.format(
+				"Expected Fibonacci value for %d is: %d", N, expected));
+		
+		System.out.println("Running array-based approach...");
+		{
+			actual = F_arrayBased(N);
+			assertEquals(expected, actual);
+			
+			Utils.measureExecutionTimeFor(new Action() {
+
+				@Override
+				public void invoke() {
+					F_arrayBased(N);			
+				}
+			}, 1000);
+		}
+		System.out.println(String.format("Result is: %d", actual));
+		
+		System.out.println("Running ring buffer-based approach...");
+		{
+			actual = F_ringBufferBased(N);
+			assertEquals(expected, actual);
+			
+			Utils.measureExecutionTimeFor(new Action() {
+
+				@Override
+				public void invoke() {
+					F_ringBufferBased(N);			
+				}
+			}, 1000);
+		}
+		System.out.println(String.format("Result is: %d", actual));
+	}
+	
+	private static long F_arrayBased(int value) {
+		long result[] = new long[value];
+		
+		result[0] = 1L;
+		result[1] = 1L;
+		
+		for (int i = 2; i < result.length; ++i) {
+			result[i] = result[i - 2] + result[i - 1];
+		}
+		return result[value - 1];
+	}
+	
+	private static long F_ringBufferBased(int value) {
+		long result = 1;
+		{
+			long ring[] = new long[] { 1L, 1L };
+			
+			for (int i = 2, imax = value - 1; i < value; ++i) {
+				result = ring[(i - 2) & 0x01] + ring[(i - 1) & 0x01];
+				
+				if (i < imax) {
+					ring[i & 0x01] = result;
+				}
+			}
+		}
+		return result;
 	}
 	
 	/**

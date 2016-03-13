@@ -62,22 +62,32 @@ public final class Utils {
 		return measureExecutionTimeFor(action, getCallerMethodName(1, false, false));
 	}
 	
+	public static double measureExecutionTimeFor(Action action, int times) {
+		return measureExecutionTimeFor(action, getCallerMethodName(1, false, false), times);
+	}
+	
 	public static double measureExecutionTimeFor(Action action, String tag) {
+		return measureExecutionTimeFor(action, tag, 1);
+	}
+	
+	public static double measureExecutionTimeFor(Action action, String tag, int times) {
 		if (action == null) {
 			throw new NullPointerException("action can't be 'null'.");
 		}
-		long time = System.nanoTime();
+		double result = 0;
 		
-		try {
-			action.invoke();
-		} catch (Throwable ignored) {
-			/* Nothing to do */
-		} finally {
-			time = (System.nanoTime() - time);
+		for (int t = 0; t < times; ++t) {
+			long time = System.nanoTime();
+			
+			try {
+				action.invoke();
+			} catch (Throwable ignored) {
+				break;
+			} finally {
+				result += (System.nanoTime() - time) / 1000000000d;
+			}
 		}
-		double result = time / 1000000000d;
-		
-		StdOut.printf("Execution time for %s is: %.10fs\n", tag, result);
+		StdOut.printf("Execution time for %s is: %.10fs\n", tag, result / times);
 		
 		return result;
 	}
