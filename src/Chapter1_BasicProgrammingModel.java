@@ -307,11 +307,12 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 		return value;
 	}
 	
-	@Test
+	@Test(timeout = 60 * 60 * 1000)
+	@ConditionalIgnoreRule.ConditionalIgnore(from = TestConditions.class, select = "RUN_SHORT_TESTS_ONLY")
 	public void exercise1_1_19_enhanced() {
 		Utils.announceTestMethod();
 		
-		final int N = 47;
+		final int N = 16;
 		
 		long actual, expected = F(N);
 		
@@ -402,7 +403,7 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 				flogn_b(N); // A 'single' call.
 			};
 		});	
-		StdOut.printf("ln(N!) is: %f, %.5fs (expected %f, %.5fs)", actual, actualTime, expected, expectedTime);
+		StdOut.printf("ln(N!) is: %f, %.5fs (expected %f, %.5fs)\n", actual, actualTime, expected, expectedTime);
 		assertEquals(expected, actual, .00001);
 	}
 	
@@ -431,5 +432,67 @@ public class Chapter1_BasicProgrammingModel extends ChapterTestBase {
 			result += Math.log(N--);
 		}
 		return result;
+	}
+	
+	
+	/**
+	 * Estimate number of recursive calls for 
+	 * Binomial Distribution assessment function.
+	 * 
+	 * @param maxValue defines the cap value each of {@link #binomial} parameters can take.
+	 */
+	public static void  exercise1_1_27(int maxValue) {
+		Utils.announceTestMethod();
+		
+		final OutValue<Integer> result = new OutValue<Integer>(0);
+		
+		int gN = -1, gk = -1, latch = 1;
+		while (gN < maxValue && gk < maxValue) {
+			int N = gN, k = gk;
+
+			result.value = 0;
+			switch (latch = (latch + 1) & 0x03) {
+				case 0:
+					binomial(N, ++k, result);
+					break;
+				case 1:
+					binomial(++N, k, result);
+					break;
+				case 2:
+					binomial(gN = ++N, gk = ++k, result);
+					break;
+					
+				default:
+					continue;
+			}
+			System.out.println(String.format("[N = %d, k = %d]: %d", 
+				N, k, result.value));
+		}
+	}
+	
+	
+	/**
+	 * This method models a recursive 'binomial' function, 
+	 * that is shown in ex. 1.1.27.
+	 * 
+	 * There is nothing special, just steps counter added and
+	 * no FP math is done to keep it fast.
+	 * 
+	 * @param N first input parameter
+	 * @param k second input parameter
+	 * @param outCountSteps defines an out-value counter, 
+	 * to keep track on how much recursive steps were done.
+	 */
+	public static void binomial(int N, int k, OutValue<Integer> outCountSteps) {
+		outCountSteps.value++;
+		
+		if (N == 0 && k == 0) {
+			return;
+		}
+		if (N < 0 || k < 0) {
+			return;
+		}
+		binomial(N - 1, k, outCountSteps);
+		binomial(N - 1, k - 1, outCountSteps);
 	}
 }
